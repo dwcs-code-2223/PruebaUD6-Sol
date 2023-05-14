@@ -1,0 +1,11 @@
+.available{
+color:green;
+}
+
+.unavailable{
+    color: red;
+}
+
+.error{
+    color: red;
+}
