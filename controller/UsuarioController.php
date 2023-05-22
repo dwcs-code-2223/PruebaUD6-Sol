@@ -13,15 +13,16 @@ class UsuarioController {
         $this->page_title = '';
         $this->usuarioServicio = new UsuarioServicio();
     }
- //3.b)
+
+    //3.b)
     public function list() {
         $this->view = self::VIEW_FOLDER . DIRECTORY_SEPARATOR . 'list_user';
         $this->page_title = 'Listado de usuarios';
         $users = $this->usuarioServicio->getUsuarios();
-       
+
         //filtramos el resultado para que coincida con lo que espera el cliente
-        $users = $this->usuarioServicio-> filterUsersList($users);
-        
+        $users = $this->usuarioServicio->filterUsersList($users);
+
         $response["page_title"] = $this->page_title;
         $response["data"] = $users;
         $response_json = json_encode($response);
@@ -47,12 +48,12 @@ class UsuarioController {
                 $response["error"] = true;
                 return json_encode($response);
             } else {
-//                c) Se guardará en la sesión (1 punto)
-//
-//    El id del usuario
-//    El id del rol seleccionado
-//    El email del usuario
-//    El tiempo de último acceso con time()
+                //                c) Se guardará en la sesión (1 punto)
+                //
+                //    El id del usuario
+                //    El id del rol seleccionado
+                //    El email del usuario
+                //    El tiempo de último acceso con time()
                 SessionManager::iniciarSesion();
                 $_SESSION["userId"] = $userResult->getId();
                 $_SESSION["email"] = $userResult->getEmail();
@@ -95,12 +96,12 @@ class UsuarioController {
                     $response["error"] = true;
                     return json_encode($response);
                 } else {
-//                c) Se guardará en la sesión (1 punto)
-//
-//    El id del usuario
-//    El id del rol seleccionado
-//    El email del usuario
-//    El tiempo de último acceso con time()
+                    //                c) Se guardará en la sesión (1 punto)
+                    //
+                    //    El id del usuario
+                    //    El id del rol seleccionado
+                    //    El email del usuario
+                    //    El tiempo de último acceso con time()
                     SessionManager::iniciarSesion();
                     $_SESSION["userId"] = $userResult->getId();
                     $_SESSION["email"] = $userResult->getEmail();
@@ -111,7 +112,7 @@ class UsuarioController {
                     $response["userId"] = $userResult->getId();
                     $response["email"] = $userResult->getEmail();
                     //2.a)
-                     $response["rolId"] = $rolId;
+                    $response["rolId"] = $rolId;
                     return json_encode($response);
                 }
             } else {
@@ -135,26 +136,30 @@ class UsuarioController {
         return json_encode($response);
     }
 
+    //2.c)
     public function register() {
         $this->page_title = 'Registro de usuario';
         $this->view = self::VIEW_FOLDER . DIRECTORY_SEPARATOR . 'register_user';
-
-        if (isset($_POST["email"]) && isset($_POST["pwd1"]) && isset($_POST["pwd2"])) {
-            $email = $_POST["email"];
-            $pwd = $_POST["pwd1"];
-            $pwd2 = $_POST["pwd2"];
-
-            return $this->usuarioServicio->register($email, $pwd, $pwd2);
+        //      return  $this->usuarioServicio->registerValidUser();
+        $user = $this->usuarioServicio->registerValidUser();
+        if ($user == null) {
+            //400 Bad Request
+            http_response_code(400);
+            $response["error"] = true;
+        } else {
+            $response["errors"] = $user->getErrors();
+            $response["error"] = !($user->getStatus() == Util::OPERATION_OK);
         }
+
+        return json_encode($response);
     }
 
     public function getRoles() {
         $app_roles = $this->usuarioServicio->getRoles();
         return json_encode($app_roles);
     }
-    
-    
-     public function delete() {
+
+    public function delete() {
         $exito = false;
         $response["error"] = true;
         $data = json_decode(file_get_contents("php://input"), true);
@@ -165,16 +170,32 @@ class UsuarioController {
             $response["error"] = !$exito;
             $response["userId"] = $userId;
             return json_encode($response);
-        }
-        else{
-             //400 Bad Request
-            http_response_code(400);         
+        } else {
+            //400 Bad Request
+            http_response_code(400);
             return json_encode($response);
         }
     }
 
-    
-     
-}
+//c) 
+    public function checkEmail() {
+        $response["available"] = false;
 
-?>
+        try {
+            $data = json_decode(file_get_contents("php://input"), true);
+            if (isset($data["email"])) {
+                $available = $this->usuarioServicio->isEmailAvailable($data["email"]);
+                $response["available"] = $available;
+            } else {
+                //400 Bad Request
+                http_response_code(400);
+            }
+        } catch (\Exception $e) {
+            echo "Ha ocurrido una excepción " . $e->getMessage();
+            //500 Internal Server Error
+            http_response_code(500);
+        }
+        return json_encode($response);
+    }
+
+}

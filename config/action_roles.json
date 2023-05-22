@@ -6,7 +6,8 @@
          "logout":[1,2],
         "register": [],
         "getRoles":[],
-         "delete":[1]
+         "delete":[1],
+         "checkEmail":[]
     },
     "NotaController":{
         "list": [1, 2],

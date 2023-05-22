@@ -54,14 +54,14 @@ function cargarUsuarios() {
                     let mainContent = document.getElementById('mainContent');
                     mainContent.appendChild(table);
                 } else {
-                    showError('No se han podido obtener los usuarios', true);
+                    showMsg('No se han podido obtener los usuarios', true, ERROR_MSG_TYPE);
                 }
 
 
 
             }).catch((error) => {
         console.log('Ha ocurrido un error en cargarUsuarios: ' + error);
-        showError('Ha ocurrido un error: ' + error, true);
+        showMsg('Ha ocurrido un error: ' + error, true, ERROR_MSG_TYPE);
     });
 }
 
@@ -162,7 +162,7 @@ function confirmDeleteUser(event) {
     let userId = event.target.getAttribute('data-bs-userId');
 
 
-    showModal("spa_modal", "Confirmación", "¿Está seguro de que desea eliminar el usuario?", "Sí", "No", function () {
+    showModal2("spa_modal", "Confirmación", "¿Está seguro de que desea eliminar el usuario?", "Sí", "No", function () {
         doDelete(userId);
     }, null);
 }
@@ -195,12 +195,12 @@ function doDelete(userId) {
 
 
                     console.error("No se ha podido eliminar el usuario");
-                    showError('No se ha podido eliminar el usuario', true);
+                    showMsg('No se ha podido eliminar el usuario', true, ERROR_MSG_TYPE);
                 }
 
             }).catch(error => {
         console.log('Ha ocurrido un error en onDelete ' + error);
-        showError('No se ha podido eliminar el usuario', true);
+        showMsg('No se ha podido eliminar el usuario', true, ERROR_MSG_TYPE);
     });
 
 }

@@ -1,64 +1,3 @@
-/* 
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Other/javascript.js to edit this template
- */
-/*Envía datos al servidor con POST en FormData de forma que pueden ser recuperados en $_POST*/
-function login(event) {
-    event.preventDefault();
-
-    let email = document.getElementById('email').value;
-    let pwd = document.querySelector("#pwd").value;
-    let rol = document.querySelector("#rol").value;
-
-
-    let login_url = "?controller=Usuario&action=login";
-
-    const data = new FormData();
-    data.append('email', email);
-    data.append('pwd', pwd);
-    data.append('rol', rol);
-
-    const request = new Request(BASE_URL + login_url, {
-        method: "POST",
-        body: data
-    });
-
-    fetch(request)
-            .then((response) => {
-                if (response.status === 200) {
-                    return response.json();
-                } else if (response.status === 400) {
-                    console.log('error 400');
-                    return false;
-                } else {
-                    console.log("Something went wrong on API server!");
-                    return false;
-                }
-
-            })
-            .then((response) => {
-                console.log(response);
-                if (response.userId && response.email && response.rolId) {
-                    toggleLoginMain(response.email);
-                    
-                     //2.b) punto 1
-                     if(Number(response.rolId)===ADMIN_ROLE){
-                        cargarUsuarios();
-                    }
-
-                } else {
-                    console.error('La autenticación ha fallado');
-                    showError('La autenticación ha fallado', true);
-                }
-            }
-            )
-            .catch((error) => {
-                console.error('Ha ocurrido un error en login' + error);
-                showError('La autenticación ha fallado', true);
-            });
-
-
-}
 
 /*Envía datos al servidor con POST en formato JSON de forma que pueden ser recuperados en php://input */
 function loginJSON(event) {
@@ -92,25 +31,28 @@ function loginJSON(event) {
 
             })
             .then((response) => {
-             
+
                 if (response.userId && response.email && response.rolId) {
-                    toggleLoginMain(response.email);
-                    
+                    showView(MAIN_VIEW_ID);
+                    setEmail(response.email);
+                    console.log(response.email);
+                    //toggleLoginMain(response.email);
+
                     //2.b) punto 1
-                     if(Number(response.rolId)===ADMIN_ROLE){
+                    if (Number(response.rolId) === ADMIN_ROLE) {
                         cargarUsuarios();
                     }
 
 
                 } else {
                     console.error('La autenticación ha fallado');
-                    showError('La autenticación ha fallado', true);
+                    showMsg('La autenticación ha fallado', true, ERROR_MSG_TYPE);
                 }
             }
             )
             .catch((error) => {
                 console.error('Ha ocurrido un error en login' + error);
-                showError('La autenticación ha fallado', true);
+                showMsg('La autenticación ha fallado', true, ERROR_MSG_TYPE);
             });
 
 
@@ -119,7 +61,7 @@ function loginJSON(event) {
 
 
 function logout() {
- 
+
     let logout_url = "?controller=Usuario&action=logout";
 
     const request = new Request(BASE_URL + logout_url, {
@@ -139,49 +81,129 @@ function logout() {
             ).
             then((response) => {
                 if ((response.error === true) || (response === false)) {
-                    showError('Ha habido un error en el cierre de sesión', true);
-            
+                    showMsg('Ha habido un error en el cierre de sesión', true, ERROR_MSG_TYPE);
+
                 }
-                toggleLoginMain('');
+                showView(LOGIN_VIEW_ID);
+                setEmail('');
+
+                //   toggleLoginMain('');
             })
             .catch((error) => {
                 console.error('Ha ocurrido un error en login' + error);
             });
 }
 
-/* Muestra la sección de login y oculta la section de main y viceversa
- * Si 
- * */
-/**
- * Muestra la sección de login y oculta la section de main  y la cabecera o viceversa: Oculta login y muestra section de main y cabecera
- * @param {string} email Email que se muestra acompañando al mensaje de Hola. Si es cadena vacía (o espacios), se vacía el mainContent y se establece el título de LOGIN.
 
- */
-function toggleLoginMain(email) {
-
-    let main = document.getElementById('main');
-    let login = document.getElementById('login');
-    let usuarioCabecera = document.getElementById('userHeader');
-    let emailHeader = document.getElementById('email_header');
-
-    emailHeader.innerHTML = email;
-// https://getbootstrap.com/docs/5.0/utilities/display/
-    emailHeader.classList.toggle('d-none');
+//1. b)
+function checkEmail() {
+    let email = document.getElementById('emailRegister').value;
+    const data = {'email': email};
 
 
-    login.classList.toggle('d-none');
-    main.classList.toggle('d-none');
-    usuarioCabecera.classList.toggle('d-none');
+    let checkEmail_url = "?controller=Usuario&action=checkEmail";
 
-    if (email.trim() === '') {
-        //vaciamos el main
-        mainContentEl = document.getElementById('mainContent');
-        mainContentEl.innerHTML='';
-        setPageTitle(LOGIN_TITLE);
-        
-    }
+    const request = new Request(BASE_URL + checkEmail_url, {
+        method: "POST",
+        body: JSON.stringify(data)
+    });
+
+    fetch(request)
+            .then((response) => {
+                if (response.status === 200) {
+                    return response.json();
+                } else if (response.status === 400) {
+                    console.log('error 400');
+                    return false;
+                } else {
+                    console.log("Something went wrong on API server!");
+                    return false;
+                }
+
+            })
+            .then((response) => {
+                if ((response !== false) && ((response.available === true) || (response.available === false))) {
+                    //d) y e) 
+                    showEmailFeedback(response.available);
+
+                } else {
+                    console.error("No se ha podido detectar la disponibilidad del email");
+                }
+
+            }
+            )
+            .catch((error) => {
+                console.error('Ha ocurrido un error en login' + error);
+                showMsg('La autenticación ha fallado', true, ERROR_MSG_TYPE);
+            });
+}
+
+
+//2.b
+function doRegister() {
+
+    let email = document.getElementById('emailRegister').value;
+    let pwd1 = document.querySelector("#pwd1Register").value;
+    let pwd2 = document.querySelector("#pwd2Register").value;
+
+
+
+    let register_url = "?controller=Usuario&action=register";
+
+
+    const data = new FormData();
+    data.append('email', email);
+    data.append('pwd1', pwd1);
+    data.append('pwd2', pwd2);
+
+
+    const request = new Request(BASE_URL + register_url, {
+        method: "POST",
+        body: data
+    });
+
+    fetch(request)
+            .then((response) => {
+                if (response.status === 200) {
+                    return response.json();
+                } else if (response.status === 400) {
+                    console.log('error 400');
+                    return false;
+                } else {
+                    console.log("Something went wrong on API server!");
+                    return false;
+                }
+
+            })
+            .then((response) => {
+                //console.log(response);
+                if ((response!==false) && (response.error === false)) {
+                    //2.d)
+                    showView(LOGIN_VIEW_ID);
+                    setPageTitle(LOGIN_TITLE);
+                    setEmail('');
+                    showMsg('El registro se ha completado con éxito', true, SUCCESS_MSG_TYPE);
+                } else {
+                    //2.e)
+                    let msg = 'No se ha podido completar el registro';
+                    if (response.errors.length > 0) {
+                        response.errors.forEach(element => {
+                            msg += '<br/>' + element;
+                        });
+                    }
+                    showMsg(msg, true, ERROR_MSG_TYPE);
+                }
+
+            }
+            )
+            .catch((error) => {
+                //2.e)
+                console.error('Ha ocurrido un error en login' + error);
+                showMsg('La autenticación ha fallado', true, ERROR_MSG_TYPE);
+            });
 
 }
+
 
 
 
