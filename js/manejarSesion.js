@@ -128,6 +128,7 @@ function checkEmail() {
 
                 } else {
                     console.error("No se ha podido detectar la disponibilidad del email");
+                    showMsg('No se ha podido detectar la disponibilidad del email', true, ERROR_MSG_TYPE);
                 }
 
             }
@@ -198,8 +199,8 @@ function doRegister() {
             )
             .catch((error) => {
                 //2.e)
-                console.error('Ha ocurrido un error en login' + error);
-                showMsg('La autenticación ha fallado', true, ERROR_MSG_TYPE);
+                console.error('Ha ocurrido un error en el registro' + error);
+                showMsg('Ha ocurrido un error en el registro', true, ERROR_MSG_TYPE);
             });
 
 }

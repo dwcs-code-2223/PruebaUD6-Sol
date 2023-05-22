@@ -4,7 +4,7 @@
  */
 
 
-const BASE_URL = "http://localhost/dwcs/pruebaUD6/PruebaUD6-sol/controller/FrontController.php";
+const BASE_URL = "http://localhost/dwcs/ud6/PruebaUD6-sol/controller/FrontController.php";
 const OK_TEXT = "Aceptar";
 const CANCEL_TEXT = "Cancelar";
 //2.c)
@@ -55,7 +55,7 @@ function onceLoaded() {
         //Reset css class and text if toggle between register and login
         let email = document.getElementById('emailRegister');
         email.classList.remove('available');
-        email.classList.remove('available');
+        email.classList.remove('unavailable');
         let emailFeedback = document.getElementById('emailFeedback');
         emailFeedback.innerHTML = '';
     };
